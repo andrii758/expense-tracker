@@ -8,6 +8,29 @@ from tabulate import tabulate
 FILENAME = "expense.csv"
 FIELDS = ["ID", "Datetime", "Description", "Amount"]
 
+def get_id(data):
+    used_id = []
+    for expense in data[1:]:
+        if expense[0].isdigit():
+            used_id.append(int(expense[0]))
+        else:
+            print("Found non digit ID. Please check it out!")
+
+    used_id.sort()
+    
+    if used_id[0] == 2:
+        return 1
+
+    for i in range(len(used_id)):
+        try:
+            if used_id[i] + 1 != used_id[i+1]:
+                result = used_id[i] + 1
+                break
+        except IndexError:
+            result = used_id[i] + 1
+
+    return result
+
 def get_month_name(month):
     month_map = {
     '1': "January", '01': "January", "january": "January",
@@ -89,7 +112,7 @@ def add_data(filename: str, data: list, expense: list):
     with open(filename, 'w', encoding="utf-8") as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerows(data)
-    print(f"Expense added successfully (ID : {expense[0]})")
+    print(f"Expense added successfully. (ID : {expense[0]}) ")
 
 def update_description(filename, ID, description):
     x = list(load_data(filename))
@@ -126,7 +149,7 @@ def delete_expense(data, ID):
         if expense[0] == ID:
             data.remove(expense)
     write_data(FILENAME, data)
-    print(f"Expense deleted successfully (Description: {expense[2]})")
+    print(f"Expense deleted successfully.")
 
 def main():
     # --- CREATE PARSER ---
@@ -165,7 +188,7 @@ def main():
             add_data(
                     FILENAME,
                     data, 
-                    [len(data), 
+                    [get_id(load_data(FILENAME)),
                      datetime.now().strftime("%Y-%m-%d"), 
                      " ".join(args.description), 
                      args.amount
@@ -189,9 +212,6 @@ def main():
                 delete_expense(load_data(FILENAME), args.id)
             else:
                 print("Enter the ID using --id <expense id>")
-        case _:
-            print("No match found.")
-
 
 
 if __name__ == "__main__":
