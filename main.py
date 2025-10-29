@@ -6,7 +6,30 @@ from tabulate import tabulate
 
 
 FILENAME = "expense.csv"
-FIELDS = ["ID", "Datetime", "Description", "Amount"]
+FIELDS = ["ID", "Date", "Description", "Amount", "Category"]
+CATEGORIES = [
+    "Housing",
+    "Food",
+    "Transport",
+    "Communication & Internet",
+    "Health",
+    "Clothing",
+    "Education",
+    "Taxes & Fees",
+    "Entertainment",
+    "Travel & Leisure",
+    "Gifts & Holidays",
+    "Pets",
+    "Beauty & Care",
+    "Hobbies",
+    "Subscriptions & Services",
+    "Charity",
+    "Finance",
+    "Savings",
+    "Investment",
+    "Emergency Fund",
+    "Debt & Loans",
+]
 
 
 def positive_int(value):
@@ -17,6 +40,10 @@ def positive_int(value):
 
 
 def get_id(data):
+    # if data is empty. first row are fields.
+    if len(data) == 1:
+        return 1
+
     used_id = []
     for expense in data[1:]:
         if expense[0].isdigit():
@@ -134,7 +161,7 @@ def load_data(filename: str):
     else:
         with open(filename, "w", encoding="utf-8") as file:
             pass
-        data = [["ID", "Date", "Description", "Amount"]]
+        data = [FIELDS]
 
     return data
 
@@ -181,6 +208,7 @@ def get_summary(data, month=None):
     return summary
 
 
+# checks if id exists for delete argument
 def id_exists(data, id_to_delete):
     target = str(id_to_delete).strip()
     for row in data[1:]:
@@ -199,13 +227,23 @@ def delete_expense(data, ID):
 
 def main():
     # --- CREATE PARSER ---
-    parser = argparse.ArgumentParser(description="Expense tracker CLI application.")
+    parser = argparse.ArgumentParser(
+        description="Expense tracker CLI application.",
+        epilog="And that's how you'd work with it",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # --- ADD ---
     add_parser = subparsers.add_parser("add", help="Add an expense")
     add_parser.add_argument("-d", "--description", nargs="+", help="Description")
     add_parser.add_argument("-a", "--amount", type=positive_int, help="Amount")
+    add_parser.add_argument(
+        "-c",
+        "--category",
+        choices=CATEGORIES,
+        help=("Allowed categories: " + ", ".join(CATEGORIES)),
+        metavar="",
+    )
 
     # --- UPDATE ---
     update_parser = subparsers.add_parser("update", help="Update an existing expense")
@@ -226,6 +264,7 @@ def main():
     delete_parser = subparsers.add_parser("delete", help="Delete an expense")
     delete_parser.add_argument("--id", type=positive_int, help="Expense ID to delete")
 
+    # --- PARSE ARGUMENTS ---
     args = parser.parse_args()
 
     # --- LOAD DATA ---
@@ -237,10 +276,11 @@ def main():
                 FILENAME,
                 data,
                 [
-                    get_id(load_data(FILENAME)),
+                    get_id(data),
                     datetime.now().strftime("%Y-%m-%d"),
                     " ".join(args.description),
                     args.amount,
+                    args.category,
                 ],
             )
 
@@ -251,7 +291,7 @@ def main():
             if args.amount:
                 update_amount(FILENAME, args.id, args.amount)
         case "list":
-            list_expenses(load_data(FILENAME))
+            list_expenses(data)
         case "summary":
             if args.month:
                 print(
