@@ -30,7 +30,7 @@ python3 -m src.main -h
 
 ## Usage 
 
-```python
+```bash
 main.py [-h] {add,update,list,summary,delete,set-limit} ...
 
 positional arguments:
