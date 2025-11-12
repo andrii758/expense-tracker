@@ -1,5 +1,18 @@
-/expense.csv
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-/budget.json
+expense.csv
 
-/__pycache__/
+budget.json
+
+*.log
+*.tmp
+
+.idea/
+.vscode/
+*.swp
